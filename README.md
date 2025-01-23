@@ -18,12 +18,18 @@ Future integration with a Flask web application (TBD).
 
 climate_analysis.ipynb: A Jupyter Notebook demonstrating the querying and analysis of weather data.
 
-app.py (TBD): A Flask application for serving the analyzed data and visualizations through a web interface.
+app.py: A Flask application for serving the analyzed data and visualizations through a web interface.
 
 Resources/: Contains the SQLite database (hawaii.sqlite) used in the project.
 
-Images/: A directory for saving visualizations generated during the analysis.
+# Requirements
+Before running the project, ensure that you have the following installed:
 
+Python 3.x
+pip (Python package manager)
+Flask
+SQLAlchemy
+SQLite (or another database system of your choice, though SQLite is the default)
 
 # Running the Analysis
 
@@ -32,6 +38,18 @@ Open the climate_analysis.ipynb notebook in Jupyter:
 jupyter notebook climate_analysis.ipynb
 
 Follow the steps in the notebook to query the database, analyze the data, and create visualizations.
+
+# Database Setup
+
+from sqlalchemy import create_engine, func
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+import pandas as pd
+from flask import Flask, jsonify
+import datetime as dt
+import numpy as np
+import os 
+
 
 # Future Development
 
