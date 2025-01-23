@@ -4,35 +4,33 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 import pandas as pd
 from flask import Flask, jsonify
-from sql_helper import SQLHelper
 import datetime as dt
-import numbpy as np
+import numpy as np
+import os 
+
 
 #################################################
 # Database Setup
 #################################################
-
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 # Create engine using the `hawaii.sqlite` database file
-engine = create_engine("sqlite:///Resources/hawaii.sqlite")
-
+engine = create_engine("sqlite:///../Resources/hawaii.sqlite")
 # Declare a Base using `automap_base()`
 Base = automap_base()
-
 # Use the Base class to reflect the database tables
 Base.prepare(autoload_with=engine)
-
 # Assign the measurement class to a variable called `Measurement` and
 # the station class to a variable called `Station`
 Measurement = Base.classes.measurement
 Station = Base.classes.station
 
-# Create a session
-session = Session(engine)
+
+#session = Session(engine)
 #################################################
 # Flask Setup
 #################################################
-
 app = Flask(__name__)
+
 
 #################################################
 # Flask Routes
@@ -41,14 +39,14 @@ app = Flask(__name__)
 @app.route("/")
 def welcome():
     return (
-        f"Welcome to the Hawaii Climate Analysis API!<br/>"
-        f"Available Routes:<br/>"
-        f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/stations<br/>"
-        f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/temp/start<br/>"
-        f"/api/v1.0/temp/start/end<br/>"
-        f"<p>'start' and 'end' date should be in the format MMDDYYYY.</p>"
+        "Welcome to the Hawaii Climate Analysis API!<br/>"
+        "Available Routes:<br/>"
+        "/api/v1.0/precipitation<br/>"
+        "/api/v1.0/stations<br/>"
+        "/api/v1.0/tobs<br/>"
+        "/api/v1.0/temp/&lt;start&gt<br/>"
+        "/api/v1.0/temp/&lt;start&gt/&lt;end&gt<br/>"
+        "<p>'start' and 'end' date should be in the format MMDDYYYY.</p>"
 
     )
 
@@ -57,13 +55,13 @@ def welcome():
 def precipitation():
     """Return the precipitation data for the last year"""
     # Calculate the date 1 year ago from last date in database
-    prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+    year_ago_date = dt.date(2017, 8, 23) - dt.timedelta(days=365)
 
     # Query for the date and precipitation for the last year
-    precipitation = session.query(Measurement.date, Measurement.prcp).\
-        filter(Measurement.date >= prev_year).all()
+    precipitation = Session.query(Measurement.date, Measurement.prcp).\
+        filter(Measurement.date >= year_ago_date).all()
 
-    session.close()
+    Session.close()
     # Dict with date as the key and prcp as the value
     precip = {date: prcp for date, prcp in precipitation}
     return jsonify(precip)
@@ -71,9 +69,9 @@ def precipitation():
 @app.route("/api/v1.0/stations")
 def stations():
     """Return a list of stations."""
-    results = session.query(Station.station).all()
+    results = Session.query(Station.station).all()
 
-    session.close()
+    Session.close()
 
     # Unravel results into a 1D array and convert to a list
     stations = list(np.ravel(results))
@@ -83,34 +81,34 @@ def stations():
 def temp_monthly():
     """Return the temperature observations (tobs) for previous year."""
     # Calculate the date 1 year ago from last date in database
-    prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+    year_ago_date = dt.date(2017, 8, 23) - dt.timedelta(days=365)
 
     # Query the primary station for all tobs from the last year
-    results = session.query(Measurement.tobs).\
+    tobs_data = Session.query(Measurement.tobs).\
         filter(Measurement.station == 'USC00519281').\
-        filter(Measurement.date >= prev_year).all()
+        filter(Measurement.date >= year_ago_date).all()
 
 @app.route("/api/v1.0/tobs")
 def temp_monthly():
     """Return the temperature observations (tobs) for previous year."""
     # Calculate the date 1 year ago from last date in database
-    prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+    year_ago_date = dt.date(2017, 8, 23) - dt.timedelta(days=365)
 
     # Query the primary station for all tobs from the last year
-    results = session.query(Measurement.tobs).\
+    tobs_data = Session.query(Measurement.tobs).\
         filter(Measurement.station == 'USC00519281').\
-        filter(Measurement.date >= prev_year).all()
+        filter(Measurement.date >= year_ago_date).all()
         
-session.close()
+Session.close()
     # Unravel results into a 1D array and convert to a list
-    temps = list(np.ravel(results))
+temps = list(np.ravel(tobs_data))
 
     # Return the results
-    return jsonify(temps=temps)
+        return jsonify(temps=temps)
 
 
-@app.route("/api/v1.0/temp/<start>")
-@app.route("/api/v1.0/temp/<start>/<end>")
+@app.route("/api/v1.0/temp/&lt;start&gt")
+@app.route("/api/v1.0/temp/&lt;start&gt/&lt;end&gt")
 def stats(start=None, end=None):
     """Return TMIN, TAVG, TMAX."""
 
